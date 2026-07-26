@@ -3,7 +3,6 @@
 Multi-agent AI SaaS platform for local service businesses (salons, clinics,
 repair shops), operating entirely through WhatsApp and Instagram.
 
-**Team:** Algorithm Avengers
 **Project:** S.V.K.M.'s Shri Bhagubhai Mafatlal Polytechnic, Mumbai — Diploma in
 Computer Engineering, Final Year Capstone
 
