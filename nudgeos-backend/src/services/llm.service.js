@@ -14,7 +14,14 @@
 //   2. Translates them into Gemini's shape internally
 //   3. Translates Gemini's response back into the Anthropic shape
 //
-// callAgent() itself is a drop-in replacement — nothing downstream needs to change.
+// callAgent() itself is a drop-in replacement - nothing downstream needs to change.
+//
+// FIX (11 Aug 2026): Gemini 3.x thinking models require a thought_signature
+// to be preserved and echoed back on every functionCall part during
+// multi-turn tool calling, or the API rejects the request with a 400 error.
+// This wrapper now captures thoughtSignature from tool_use responses and
+// replays it when that tool_use block is sent back in a later turn.
+// See: https://ai.google.dev/gemini-api/docs/thought-signatures
 
 const { GoogleGenAI } = require("@google/genai");
 
@@ -54,7 +61,9 @@ function convertMessages(messages) {
       if (block.type === "text") {
         parts.push({ text: block.text });
       } else if (block.type === "tool_use") {
-        parts.push({ functionCall: { name: block.name, args: block.input } });
+        const fcPart = { functionCall: { name: block.name, args: block.input } };
+        if (block._thoughtSignature) fcPart.thoughtSignature = block._thoughtSignature;
+        parts.push(fcPart);
       } else if (block.type === "tool_result") {
         let responseData;
         try {
@@ -95,6 +104,7 @@ function normalizeResponse(geminiResponse) {
         id: "call_" + Math.random().toString(36).slice(2, 10),
         name: part.functionCall.name,
         input: part.functionCall.args || {},
+        _thoughtSignature: part.thoughtSignature || undefined,
       });
     } else if (part.text) {
       content.push({ type: "text", text: part.text });
