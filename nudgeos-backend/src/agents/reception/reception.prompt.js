@@ -1,4 +1,16 @@
 // src/agents/reception/reception.prompt.js
+//
+// CHANGELOG:
+// v0 (Day 7, 28 Jul) - initial draft, 10 hard rules, no few-shot examples
+// v0.1 (Day 8, 29 Jul) - fixed: relative dates ("tomorrow") were not
+//   resolving because todayDate was never injected into the prompt.
+//   Added todayDate parameter + CURRENT DATE section.
+// v0.2 (Day 8, 29 Jul) - fixed: multi-intent messages were triggering
+//   two tool calls instead of one clarifying question. Strengthened
+//   Rule 3 with a concrete example.
+// Status after Day 9 (30 Jul): full 15-test regression run = 14/14 pass
+//   (1 test deferred - requires conversation memory, not built until
+//   Task 15 / Day 21). No further revision needed at this time
 
 function buildReceptionPrompt(business, todayDate) {
   return `You are the WhatsApp receptionist for ${business.name}, a ${business.category}.
