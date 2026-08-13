@@ -3,7 +3,13 @@
 const { callAgent } = require("../../services/llm.service");
 const { buildReceptionPrompt } = require("./reception.prompt");
 const { receptionTools } = require("./reception.tools");
-const { mockCheckAvailability, mockCreateBooking } = require("./reception.mocks");
+const {
+  mockCheckAvailability,
+  mockCreateBooking,
+  mockFindBooking,
+  mockCancelBooking,
+  mockRescheduleBooking,
+} = require("./reception.mocks");
 
 async function executeTool(name, input) {
   if (name === "check_availability") {
@@ -12,6 +18,15 @@ async function executeTool(name, input) {
   }
   if (name === "create_booking") {
     return mockCreateBooking(input);
+  }
+  if (name === "find_booking") {
+    return mockFindBooking(input);
+  }
+  if (name === "cancel_booking") {
+    return mockCancelBooking(input);
+  }
+  if (name === "reschedule_booking") {
+    return mockRescheduleBooking(input);
   }
   return { error: "unknown_tool" };
 }
