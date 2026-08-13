@@ -11,13 +11,13 @@ const {
   mockRescheduleBooking,
 } = require("./reception.mocks");
 
-async function executeTool(name, input) {
+async function executeTool(name, input, business) {
   if (name === "check_availability") {
     const slots = mockCheckAvailability(input);
     return { slots };
   }
   if (name === "create_booking") {
-    return mockCreateBooking(input);
+    return mockCreateBooking(input, business);
   }
   if (name === "find_booking") {
     return mockFindBooking(input);
@@ -46,7 +46,7 @@ async function handleReceptionMessage(business, conversationHistory, incomingMes
 
   const toolUseBlock = result.response.content.find((b) => b.type === "tool_use");
   if (toolUseBlock) {
-    const toolResult = await executeTool(toolUseBlock.name, toolUseBlock.input);
+    const toolResult = await executeTool(toolUseBlock.name, toolUseBlock.input, business);
 
     const followUp = await callAgent(systemPrompt, receptionTools, [
       ...messages,
