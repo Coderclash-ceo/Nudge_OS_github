@@ -46,8 +46,14 @@ async function handleReceptionMessage(business, conversationHistory, incomingMes
 
   const toolUseBlock = result.response.content.find((b) => b.type === "tool_use");
   if (toolUseBlock) {
-    const toolResult = await executeTool(toolUseBlock.name, toolUseBlock.input, business);
-
+    let toolResult;
+    try {
+      toolResult = await executeTool(toolUseBlock.name, toolUseBlock.input, business);
+    } catch (err) {
+      console.error("[reception.agent] executeTool failed:", err.message);
+      toolResult = { error: "tool_execution_failed" };
+    }
+    
     const followUp = await callAgent(systemPrompt, receptionTools, [
       ...messages,
       { role: "assistant", content: result.response.content },
