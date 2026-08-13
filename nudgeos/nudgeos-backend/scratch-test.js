@@ -1,5 +1,6 @@
 require("dotenv").config();
 const { getDoc, getInactiveCustomers, getBusinessStatsRaw } = require("./src/services/firestore.service");
+const { resolveBusinessId } = require("./src/middleware/tenantResolver");
 
 async function main() {
   const business = await getDoc("businesses", "test-business-1");
@@ -10,6 +11,12 @@ async function main() {
 
   const wrongBusiness = await getDoc("businesses", "does-not-exist");
   console.log("Wrong business (should be null):", wrongBusiness);
+
+  const known = await resolveBusinessId("919594652052");
+  console.log("Known number resolves to:", known);
+
+  const unknown = await resolveBusinessId("911111111111");
+  console.log("Unknown number resolves to:", unknown);
 }
 
 main().catch(console.error);
