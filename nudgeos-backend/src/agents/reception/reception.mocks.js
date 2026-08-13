@@ -38,9 +38,15 @@ function isSlotTaken(date, time) {
   return mockExistingBookings.has(`${date}|${time}`);
 }
 
+// --- Multi-tenancy isolation (Task 28) ---
+const mockBookingOwners = new Map(); // bookingId -> businessId
+
 function mockCreateBooking({ customerName, service, date, time }, business) {
   if (!customerName || !service || !date || !time) {
     return { error: "missing_fields" };
+  }
+  if (!business || !business.businessId) {
+    return { error: "missing_business_context" };
   }
   if (!isWithinBusinessHours(business, date, time)) {
     return { error: "outside_business_hours" };
@@ -48,15 +54,20 @@ function mockCreateBooking({ customerName, service, date, time }, business) {
   if (isSlotTaken(date, time)) {
     return { error: "slot_taken" };
   }
-  console.log("[MOCK] booking created:", { customerName, service, date, time });
-  return { success: true, bookingId: "mock-" + Date.now() };
+  const bookingId = "mock-" + Date.now();
+  mockBookingOwners.set(bookingId, business.businessId);
+  console.log("[MOCK] booking created:", { customerName, service, date, time, businessId: business.businessId });
+  return { success: true, bookingId };
 }
 
-function mockFindBooking({ customerName, roughDate, service }) {
+function mockFindBooking({ customerName, roughDate, service }, business) {
   if (!customerName) {
     return { error: "missing_fields" };
   }
-  console.log("[MOCK] booking found for:", customerName);
+  if (!business || !business.businessId) {
+    return { error: "missing_business_context" };
+  }
+  console.log("[MOCK] booking found for:", customerName, "businessId:", business.businessId);
   return {
     bookingId: "mock-123",
     matchedService: service || "haircut",
@@ -64,19 +75,35 @@ function mockFindBooking({ customerName, roughDate, service }) {
   };
 }
 
-function mockCancelBooking({ bookingId }) {
+function mockCancelBooking({ bookingId }, business) {
   if (!bookingId) {
     return { error: "missing_fields" };
   }
-  console.log("[MOCK] booking cancelled:", bookingId);
+  if (!business || !business.businessId) {
+    return { error: "missing_business_context" };
+  }
+  const ownerBusinessId = mockBookingOwners.get(bookingId);
+  if (ownerBusinessId && ownerBusinessId !== business.businessId) {
+    console.error("[MOCK] cross-business cancel attempt blocked:", { bookingId, requestedBy: business.businessId, ownedBy: ownerBusinessId });
+    return { error: "not_found" };
+  }
+  console.log("[MOCK] booking cancelled:", bookingId, "businessId:", business.businessId);
   return { success: true };
 }
 
-function mockRescheduleBooking({ bookingId, newDate, newTime }) {
+function mockRescheduleBooking({ bookingId, newDate, newTime }, business) {
   if (!bookingId || !newDate || !newTime) {
     return { error: "missing_fields" };
   }
-  console.log("[MOCK] booking rescheduled:", bookingId, "->", newDate, newTime);
+  if (!business || !business.businessId) {
+    return { error: "missing_business_context" };
+  }
+  const ownerBusinessId = mockBookingOwners.get(bookingId);
+  if (ownerBusinessId && ownerBusinessId !== business.businessId) {
+    console.error("[MOCK] cross-business reschedule attempt blocked:", { bookingId, requestedBy: business.businessId, ownedBy: ownerBusinessId });
+    return { error: "not_found" };
+  }
+  console.log("[MOCK] booking rescheduled:", bookingId, "->", newDate, newTime, "businessId:", business.businessId);
   return { success: true, newDate, newTime };
 }
 

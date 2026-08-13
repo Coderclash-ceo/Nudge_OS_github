@@ -20,16 +20,16 @@ async function executeTool(name, input, business) {
     return mockCreateBooking(input, business);
   }
   if (name === "find_booking") {
-    return mockFindBooking(input);
+    return mockFindBooking(input, business);
   }
   if (name === "cancel_booking") {
-    return mockCancelBooking(input);
+    return mockCancelBooking(input, business);
   }
   if (name === "reschedule_booking") {
-    return mockRescheduleBooking(input);
+    return mockRescheduleBooking(input, business);
   }
   return { error: "unknown_tool" };
-}
+} 
 
 async function handleReceptionMessage(business, conversationHistory, incomingMessage) {
   const todayDate = new Date().toISOString().split("T")[0];
@@ -53,7 +53,7 @@ async function handleReceptionMessage(business, conversationHistory, incomingMes
       console.error("[reception.agent] executeTool failed:", err.message);
       toolResult = { error: "tool_execution_failed" };
     }
-    
+
     const followUp = await callAgent(systemPrompt, receptionTools, [
       ...messages,
       { role: "assistant", content: result.response.content },
