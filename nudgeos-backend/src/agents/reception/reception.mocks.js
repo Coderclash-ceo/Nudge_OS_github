@@ -4,7 +4,9 @@
 function mockCheckAvailability({ service, date }) {
   return ["10:00 AM", "02:00 PM", "04:30 PM"];
 }
-
+function mockCheckAvailabilityEmpty({ service, date }) {
+  return []; // simulates a fully booked date
+}
 // --- Business-hours guard (Task 25) ---
 function getDayKey(dateStr) {
   const day = new Date(dateStr + "T00:00:00").getDay(); // 0=Sun, 1=Mon, ... 6=Sat
@@ -106,9 +108,9 @@ function mockRescheduleBooking({ bookingId, newDate, newTime }, business) {
   console.log("[MOCK] booking rescheduled:", bookingId, "->", newDate, newTime, "businessId:", business.businessId);
   return { success: true, newDate, newTime };
 }
-
 module.exports = {
   mockCheckAvailability,
+  mockCheckAvailabilityEmpty,
   mockCreateBooking,
   mockFindBooking,
   mockCancelBooking,
