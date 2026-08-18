@@ -11,6 +11,11 @@ const {
   mockRescheduleBooking,
 } = require("./reception.mocks");
 
+function buildMessageWindow(fullHistory, incomingMessage, maxTurns = 10) {
+  const recent = fullHistory.slice(-maxTurns);
+  return [...recent, { role: "user", content: incomingMessage }];
+}
+
 async function executeTool(name, input, business) {
   if (name === "check_availability") {
     const slots = mockCheckAvailability(input);
@@ -34,11 +39,7 @@ async function executeTool(name, input, business) {
 async function handleReceptionMessage(business, conversationHistory, incomingMessage) {
   const todayDate = new Date().toISOString().split("T")[0];
   const systemPrompt = buildReceptionPrompt(business, todayDate);
-  const messages = [
-    ...conversationHistory,
-    { role: "user", content: incomingMessage },
-  ];
-
+ const messages = buildMessageWindow(conversationHistory, incomingMessage);
   const result = await callAgent(systemPrompt, receptionTools, messages);
   if (!result.ok) {
     return { reply: "Sorry, I'm having trouble right now - please try again in a moment." };
