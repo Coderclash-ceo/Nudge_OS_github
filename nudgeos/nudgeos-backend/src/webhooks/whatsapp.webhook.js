@@ -29,6 +29,8 @@ router.post("/webhook/whatsapp", async (req, res) => {
     const text = msg.text?.body;
 
     console.log("[webhook] incoming:", { from, text });
+    const { sendMessage } = require("../services/whatsapp.service");
+    await sendMessage(from, "received");
     // Task 12 replaces this stub with tenantResolver -> reception.agent -> whatsapp.service
   } catch (err) {
     console.error("[webhook] parse error:", err.message);
