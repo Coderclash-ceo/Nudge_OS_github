@@ -1,6 +1,7 @@
 // src/agents/retention/retention.agent.js
 
 const { callAgent } = require("../../services/llm.service");
+const { getInactiveCustomers } = require("../../services/firestore.service");
 
 const RETENTION_PROMPT = `You write short, warm WhatsApp win-back messages for a local service business.
 
@@ -10,17 +11,8 @@ Rules:
 - One short paragraph, no more than 3 sentences.
 - Do not sound like a mass marketing blast - make it feel personal.`;
 
-// TEMPORARY mock - replace with Member 2's getInactiveCustomers(businessId, 25, 30) once Firestore is ready
-function mockGetInactiveCustomers() {
-  return [
-    { id: "cust1", name: "Raj", lastService: "haircut", lastVisit: "2026-08-05" },
-    { id: "cust2", name: "Priya", lastService: "facial", lastVisit: "2026-08-03" },
-    { id: "cust3", name: "Aman", lastService: null, lastVisit: "2026-08-01" },
-  ];
-}
-
 async function runRetentionAgent(business) {
-  const customers = mockGetInactiveCustomers();
+  const customers = await getInactiveCustomers(business.businessId, 25, 30);
   const drafts = [];
 
   for (const customer of customers) {
