@@ -1,3 +1,4 @@
+// TODO (M3-10, Day 19) — BLOCKED on M2's backend. See PENDING_TASKS.md
 import {
   collection,
   doc,
