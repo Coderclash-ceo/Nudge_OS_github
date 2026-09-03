@@ -53,3 +53,10 @@ export async function queryItems(collectionName, field, operator, value) {
   const snapshot = await getDocs(q);
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 }
+
+// Mock save for Settings — replace with real POST /api/settings once M2's backend is ready
+export async function saveSettings(formState) {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  // Simulates backend response: 200 returns the saved document
+  return { ...formState, savedAt: new Date().toISOString() };
+}

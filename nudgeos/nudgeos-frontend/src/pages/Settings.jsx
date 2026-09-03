@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { saveSettings } from "../api/client";
 
 export default function Settings() {
   const [services, setServices] = useState([{ name: "Haircut", price: 300 }]);
@@ -7,6 +8,9 @@ export default function Settings() {
     sat: "10am - 5pm",
     sun: null,
   });
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   function updateService(index, field, value) {
     const updated = [...services];
@@ -20,6 +24,21 @@ export default function Settings() {
 
   function removeService(index) {
     setServices(services.filter((_, i) => i !== index));
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    setSaveSuccess(false);
+    setSaveError("");
+    try {
+      await saveSettings({ services, hours, whatsappNumber: "" });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      setSaveError("Failed to save settings. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -92,11 +111,23 @@ export default function Settings() {
         </div>
       </div>
 
+      {saveSuccess && (
+        <div className="mb-3 text-sm text-green-700 bg-green-50 p-2 rounded">
+          Settings saved successfully!
+        </div>
+      )}
+      {saveError && (
+        <div className="mb-3 text-sm text-red-600 bg-red-50 p-2 rounded">
+          {saveError}
+        </div>
+      )}
+
       <button
-        disabled
-        className="bg-slate-300 text-slate-500 rounded px-4 py-2 cursor-not-allowed"
+        onClick={handleSave}
+        disabled={saving}
+        className="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Save (coming in Task M3-08)
+        {saving ? "Saving..." : "Save"}
       </button>
     </div>
   );
