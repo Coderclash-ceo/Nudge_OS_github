@@ -1,7 +1,11 @@
 const express = require("express");
 const router = express.Router();
+const { resolveBusinessId } = require("../middleware/tenantResolver");
+const { getDoc, queryCollection } = require("../services/firestore.service");
+const { handleReceptionMessage } = require("../agents/reception/reception.agent");
+const { sendMessage } = require("../services/whatsapp.service");
 
-// GET — Meta's webhook verification handshake (moved from Task 4's verify.js)
+// GET — Meta's webhook verification handshake
 router.get("/webhook/whatsapp", (req, res) => {
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
@@ -23,15 +27,26 @@ router.post("/webhook/whatsapp", async (req, res) => {
     const change = entry?.changes?.[0]?.value;
     const msg = change?.messages?.[0];
 
-    if (!msg) return; // status updates / non-message events land here too — ignore for now
+    if (!msg) return;
 
     const from = msg.from;
     const text = msg.text?.body;
 
     console.log("[webhook] incoming:", { from, text });
-    const { sendMessage } = require("../services/whatsapp.service");
-    await sendMessage(from, "received");
-    // Task 12 replaces this stub with tenantResolver -> reception.agent -> whatsapp.service
+
+    const { found, businessId } = await resolveBusinessId(from);
+    if (!found) {
+      console.log("[webhook] unknown number, ignoring:", from);
+      return;
+    }
+
+    const business = await getDoc("businesses", businessId);
+const conversationHistory = []; // TODO: replace with real history once Task 21 (store conversation history) is built
+
+    const { reply } = await handleReceptionMessage(business, conversationHistory, text);
+
+    await sendMessage(from, reply);
+    console.log("[webhook] replied:", reply);
   } catch (err) {
     console.error("[webhook] parse error:", err.message);
   }
