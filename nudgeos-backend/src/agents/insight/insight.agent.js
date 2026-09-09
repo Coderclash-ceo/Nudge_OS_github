@@ -1,7 +1,6 @@
 // src/agents/insight/insight.agent.js
 
 const { callAgent } = require("../../services/llm.service");
-const { getBusinessStatsRaw } = require("../../services/firestore.service");
 
 const INSIGHT_PROMPT = `You receive pre-computed business statistics as JSON.
 
@@ -52,6 +51,7 @@ function computeStats(raw) {
 }
 
 async function runInsightAgent(businessId) {
+  const { getBusinessStatsRaw } = require("../../services/firestore.service");
   const raw = await getBusinessStatsRaw(businessId);
   const computed = computeStats(raw);
 
