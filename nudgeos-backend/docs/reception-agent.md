@@ -124,6 +124,13 @@ once conversation memory was built (Day 21).
 correctly handled with zero unwarranted tool calls ("hey", "is it open",
 "can you help", "what's the weather today").
 
+
+**Multi-turn memory test (9 Sep 2026):** 4-turn conversation
+(book haircut -> tomorrow -> 3pm+name -> correct to facial) - agent
+correctly retained customer name ("Priya") across all subsequent turns
+including after a service correction. `buildMessageWindow` confirmed
+working end-to-end with real API calls, not just unit-level.
+
 ---
 
 ## M2 Integration Status (confirmed 9 Sep 2026)
