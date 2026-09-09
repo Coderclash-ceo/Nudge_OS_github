@@ -19,6 +19,16 @@ None (no tool-calling, pure text generation).
 - Draft generation: verified with 3 mock customers, all passed quality review (personalized, no hallucinated services, no discount promises)
 - Live sending: NOT started (Task 20/21 split - draft-review-first is deliberate per handbook)
 
+
+## Multi-Language Verification (9 Sep 2026)
+
+Tested with a Hindi/Devanagari service name ("मेहंदी / mehendi") mixed
+into an otherwise English prompt. Result: correctly processed, no
+encoding issues, model naturally referenced it in English output
+without garbling the script. Confirms Gemini adapter handles UTF-8
+Devanagari input cleanly end-to-end.
+
+
 ## Known Limitations
 - Real Firestore query unverified end-to-end
 - No duplicate-send prevention yet (customer flagged inactive on consecutive days could get repeat messages) - flagged as design gap, needs `lastRetentionSentAt` field addition to M2's schema
