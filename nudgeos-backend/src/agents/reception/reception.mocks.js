@@ -1,10 +1,10 @@
 // src/agents/reception/reception.mocks.js
 // TEMPORARY - delete once Member 2's real calendar.service.js / firestore.service.js exist
 
-function mockCheckAvailability({ service, date }) {
+function mockCheckAvailability({ service, date }, business) {
   return ["10:00 AM", "02:00 PM", "04:30 PM"];
 }
-function mockCheckAvailabilityEmpty({ service, date }) {
+function mockCheckAvailabilityEmpty({ service, date }, business) {
   return []; // simulates a fully booked date
 }
 // --- Business-hours guard (Task 25) ---

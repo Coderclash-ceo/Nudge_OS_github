@@ -17,10 +17,10 @@ function buildMessageWindow(fullHistory, incomingMessage, maxTurns = 10) {
 }
 
 async function executeTool(name, input, business) {
-  if (name === "check_availability") {
-    const slots = mockCheckAvailability(input);
+if (name === "check_availability") {
+    const slots = mockCheckAvailability(input, business);
     return { slots };
-  }
+}
   if (name === "create_booking") {
     return mockCreateBooking(input, business);
   }
