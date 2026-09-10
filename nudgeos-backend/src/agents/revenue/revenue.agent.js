@@ -11,14 +11,17 @@ Rules:
 - This is an internal owner-facing alert, never sent to customers directly.`;
 
 // TEMPORARY mock - replace with Member 2's getCalendarGaps(businessId) once Calendar service is ready
-function mockGetCalendarGaps() {
+function mockGetCalendarGaps(businessId) {
   return [
     { day: "Thursday", window: "14:00-17:00", weeksObserved: 3 },
   ];
 }
 
 async function runRevenueAgent(business) {
-  const gaps = mockGetCalendarGaps();
+  if (!business || !business.businessId) {
+    return { error: "missing_business_context" };
+  }
+  const gaps = mockGetCalendarGaps(business.businessId);
   if (!gaps.length) return null;
 
   const result = await callAgent(REVENUE_PROMPT, [], [
