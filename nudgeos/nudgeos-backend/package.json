@@ -15,6 +15,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "firebase-admin": "^14.2.0",
+    "googleapis": "^180.0.0",
     "node-fetch": "^2.7.0"
   }
 }
