@@ -32,3 +32,13 @@ Devanagari input cleanly end-to-end.
 ## Known Limitations
 - Real Firestore query unverified end-to-end
 - No duplicate-send prevention yet (customer flagged inactive on consecutive days could get repeat messages) - flagged as design gap, needs `lastRetentionSentAt` field addition to M2's schema
+
+
+## Real End-to-End Test (13 Sep 2026)
+
+First successful real Firebase -> real Firestore -> real LLM test.
+Used `test-business-m1` (separate from M2's `test-business-1` to avoid
+collision, per M2's explicit request). 2 of 3 seeded customers correctly
+identified as inactive (25-30 day window); drafted messages personalized,
+correctly referenced name and last service, no discount promises.
+Task 20 is now genuinely complete, not just code-ready.
