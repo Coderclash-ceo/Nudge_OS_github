@@ -4,3 +4,4 @@ scratch/
 *.log
 src/services/firestore.service.js
 firebase-credentials.json
+src/config/firebase.js
