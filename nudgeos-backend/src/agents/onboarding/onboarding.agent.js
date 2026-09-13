@@ -33,6 +33,10 @@ async function runOnboardingAgent(rawText) {
     (b) => b.type === "text"
   );
 
+  if (!text) {
+    return { error: "no_text_response" };
+  }
+
   try {
     return JSON.parse(text.text);
   } catch (e) {

@@ -12,6 +12,9 @@ Rules:
 - Do not sound like a mass marketing blast - make it feel personal.`;
 
 async function runRetentionAgent(business) {
+  if (!business || !business.businessId) {
+    return [{ error: "missing_business_context" }];
+  }
   const customers = await getInactiveCustomers(business.businessId, 25, 30);
   const drafts = [];
 

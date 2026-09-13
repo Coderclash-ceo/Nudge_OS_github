@@ -51,6 +51,10 @@ function computeStats(raw) {
 }
 
 async function runInsightAgent(businessId) {
+  if (!businessId) {
+    return { error: "missing_business_context" };
+  }
+
   const { getBusinessStatsRaw } = require("../../services/firestore.service");
   const raw = await getBusinessStatsRaw(businessId);
   const computed = computeStats(raw);
@@ -62,6 +66,10 @@ async function runInsightAgent(businessId) {
   if (!result.ok) return { error: result.error };
 
   const text = result.response.content.find((b) => b.type === "text");
+  if (!text) {
+    return { error: "no_text_response" };
+  }
+
   try {
     return JSON.parse(text.text);
   } catch (e) {
