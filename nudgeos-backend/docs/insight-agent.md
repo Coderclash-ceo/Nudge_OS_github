@@ -25,3 +25,14 @@ None.
 
 ## Known Limitations
 End-to-end real-data test pending M2.
+
+
+## Real End-to-End Test (14 Sep 2026)
+
+First successful real Firebase -> real Firestore -> computeStats() ->
+real LLM test, using `test-business-m1` with 3 seeded bookings. Result
+correctly aggregated: 3 bookings this month, busiest hour 02:00 PM
+(matched 2 of 3 bookings sharing that time), 3 at-risk customers
+(shared seed data with Retention Agent test). Confirms the code-side
+aggregation principle works correctly end-to-end, not just in isolated
+unit tests.
