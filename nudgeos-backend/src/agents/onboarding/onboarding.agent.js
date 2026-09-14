@@ -9,11 +9,22 @@ Respond with ONLY valid JSON, no other text, in exactly this shape:
 {
   "services": [{ "name": string, "price": number|null }],
   "hours": {
-    "mon-fri": string|null,
+    "mon": string|null,
+    "tue": string|null,
+    "wed": string|null,
+    "thu": string|null,
+    "fri": string|null,
     "sat": string|null,
     "sun": string|null
   }
 }
+
+Each day's value should be the hours (e.g. "10:00 AM - 8:00 PM") or
+"closed" if that day is explicitly closed. If a range like "Mon-Fri" is
+given, apply the same hours to each individual day - never group days
+into a single field, since some days may have exceptions (e.g. "open
+daily except Tuesday" means every day gets the same hours EXCEPT tue,
+which gets "closed").
 
 If a field cannot be determined, use null.
 Never invent a price or hour that isn't stated or clearly implied.`;
