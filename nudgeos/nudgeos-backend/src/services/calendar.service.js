@@ -1,5 +1,5 @@
 const { calendar } = require("../config/googleCalendar");
-const { getDoc } = require("./firestore.service");
+const { getDoc, setDoc } = require("./firestore.service");
 
 async function listEvents(calendarId, timeMin, timeMax) {
   const res = await calendar.events.list({
@@ -121,4 +121,111 @@ async function listAvailableSlots(businessId, service, date) {
   return slots;
 }
 
-module.exports = { listEvents, getCalendarGaps, listAvailableSlots };
+async function createEvent(calendarId, { summary, startTime, endTime, description }) {
+  const res = await calendar.events.insert({
+    calendarId,
+    requestBody: {
+      summary,
+      description,
+      start: { dateTime: startTime.toISOString(), timeZone: "Asia/Kolkata" },
+      end: { dateTime: endTime.toISOString(), timeZone: "Asia/Kolkata" },
+    },
+  });
+  return res.data; // includes .id
+}
+
+async function cancelEvent(calendarId, eventId) {
+  await calendar.events.delete({ calendarId, eventId });
+  return true;
+}
+
+async function rescheduleEvent(calendarId, eventId, { newStartTime, newEndTime }) {
+  const res = await calendar.events.patch({
+    calendarId,
+    eventId,
+    requestBody: {
+      start: { dateTime: newStartTime.toISOString(), timeZone: "Asia/Kolkata" },
+      end: { dateTime: newEndTime.toISOString(), timeZone: "Asia/Kolkata" },
+    },
+  });
+  return res.data;
+}
+
+async function createCalendarBooking(businessId, { customerName, service, date, time }) {
+  const business = await getDoc("businesses", businessId);
+  if (!business) throw new Error(`Business not found: ${businessId}`);
+  const { calendarId, services } = business;
+
+  const serviceInfo = (services || []).find((s) => s.name === service);
+  if (!serviceInfo) throw new Error(`Service not found: ${service}`);
+
+  const startTime = timeStringToDate(date, time);
+  const endTime = new Date(startTime.getTime() + serviceInfo.durationMin * 60000);
+
+  const event = await createEvent(calendarId, {
+    summary: `${service} - ${customerName}`,
+    description: `Booked via NudgeOS for ${customerName}`,
+    startTime,
+    endTime,
+  });
+
+  const bookingId = `booking_${Date.now()}`;
+  await setDoc("bookings", businessId, bookingId, {
+    customerName,
+    service,
+    date: date.toISOString().split("T")[0],
+    time,
+    googleEventId: event.id,
+  });
+
+  return { bookingId, googleEventId: event.id };
+}
+
+async function cancelCalendarBooking(businessId, bookingId) {
+  const business = await getDoc("businesses", businessId);
+  if (!business) throw new Error(`Business not found: ${businessId}`);
+  const { calendarId } = business;
+
+  const booking = await getDoc("bookings", businessId, bookingId);
+  if (!booking) throw new Error(`Booking not found: ${bookingId}`);
+
+  await cancelEvent(calendarId, booking.googleEventId);
+  return true;
+}
+
+async function rescheduleCalendarBooking(businessId, bookingId, { date, time }) {
+  const business = await getDoc("businesses", businessId);
+  if (!business) throw new Error(`Business not found: ${businessId}`);
+  const { calendarId, services } = business;
+
+  const booking = await getDoc("bookings", businessId, bookingId);
+  if (!booking) throw new Error(`Booking not found: ${bookingId}`);
+
+  const serviceInfo = (services || []).find((s) => s.name === booking.service);
+  if (!serviceInfo) throw new Error(`Service not found: ${booking.service}`);
+
+  const newStartTime = timeStringToDate(date, time);
+  const newEndTime = new Date(newStartTime.getTime() + serviceInfo.durationMin * 60000);
+
+  await rescheduleEvent(calendarId, booking.googleEventId, { newStartTime, newEndTime });
+
+  await setDoc("bookings", businessId, bookingId, {
+    ...booking,
+    date: date.toISOString().split("T")[0],
+    time,
+  });
+
+  return true;
+}
+
+module.exports = {
+  listEvents,
+  getCalendarGaps,
+  listAvailableSlots,
+  createEvent,
+  cancelEvent,
+  rescheduleEvent,
+  createCalendarBooking,
+  cancelCalendarBooking,
+  rescheduleCalendarBooking,
+};
